@@ -1,0 +1,98 @@
+<?php
+
+/**
+ * Implements hook_block_info().
+ */
+function table_form_block_info() {
+  $blocks['table_form'] = array(
+    'info' => t('Table Form'),
+    'cache' => DRUPAL_NO_CACHE
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function table_form_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'table_form':
+      $block['subject'] = t('Table Form');
+      $block['content'] = drupal_get_form('table_form_form');
+      break;
+    
+  }
+  return $block;
+}
+
+function table_form_form() {
+	$form = [];
+	$users = entity_load('user');
+	unset($users[0]);
+
+	$rows = [];
+	foreach($users as $uid => $user) {
+		$rows[$uid] = [
+				'name-'.$uid => [
+					'#type' => 'textfield',
+					'#default_value' => $user->name
+					],
+				'uid' => [
+					'#markup' => $user->uid
+				],
+				'submit' => [
+					'#type' => 'submit',
+					'#value' => t('Change'),
+					'#name' => $uid
+				]
+		];
+	}
+	$form['table'] = [
+		'#theme' => 'table_form',
+		'#header' => [t('Name'), t('UID'), ''],
+		'rows' => $rows,
+	];
+	return $form;
+}
+
+function table_form_form_submit($form_id, $form_state) {
+	$uid = $form_state['clicked_button']['#name'];
+	$user = user_load($uid);
+	user_save($user, ['name' => $form_state['values']['name-' . $uid]]);
+}
+/**
+ * Implements hook_theme().
+ */
+function table_form_theme($existing, $type, $theme, $path) {
+  return array(
+    'table_form' => array(
+      'render element' => 'form',
+    ),
+  );
+}
+
+function theme_table_form(&$variables) {
+	$form = $variables['form'];
+	$rows = $form['rows'];
+	$header = $form['#header'];
+	$content = [
+		'#theme' => 'table',
+		'#header' => $header,
+		'#rows' => []
+	];
+	foreach(element_children($rows) as $row_index) {
+		// Traverse each column in the row.  @see element_children().
+		foreach (element_children($rows[$row_index]) as $col_index) {
+		  // Render the column form element.
+		  $row[] = drupal_render($rows[$row_index][$col_index]);
+		}
+		// Add the row to the table.
+		$content['#rows'][] = $row;
+		unset($row);
+		// Render the table and return.
+	}
+	return drupal_render($content);
+}
