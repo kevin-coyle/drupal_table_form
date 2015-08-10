@@ -46,7 +46,7 @@ function table_form_form($form, &$form_state) {
 				'submit' => [
 					'#type' => 'submit',
 					'#value' => t('Change'),
-					'#name' => $uid,
+					'#uid' => $uid,
 					'#ajax' => [
 						'callback' => 'table_form_ajax',
 						'wrapper' => "table-wrapper",
@@ -70,7 +70,7 @@ function table_form_ajax($form, &$form_state) {
 }
 
 function table_form_form_submit(&$form, &$form_state) {
-	$uid = $form_state['clicked_button']['#name'];
+	$uid = $form_state['clicked_button']['#uid'];
 
 	//Reset input values to make sure that the ajax form returns correctly.
 	// $form_state['rebuild'] = TRUE;
