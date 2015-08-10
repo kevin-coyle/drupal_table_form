@@ -73,8 +73,8 @@ function table_form_form_submit(&$form, &$form_state) {
 	$uid = $form_state['clicked_button']['#name'];
 
 	//Reset input values to make sure that the ajax form returns correctly.
-	$form_state['rebuild'] = TRUE;
-	$form_state['input'] = [];
+	// $form_state['rebuild'] = TRUE;
+	// $form_state['input'] = [];
 	$user = user_load($uid);
 	drupal_set_message("Updated User - $user->name");
 	user_save($user, ['name' => $form_state['values']['name-' . $uid]]);
