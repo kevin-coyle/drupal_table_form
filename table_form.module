@@ -28,7 +28,7 @@ function table_form_block_view($delta = '') {
   return $block;
 }
 
-function table_form_form() {
+function table_form_form($form, &$form_state) {
 	$form = [];
 	$users = entity_load('user');
 	unset($users[0]);
@@ -46,11 +46,18 @@ function table_form_form() {
 				'submit' => [
 					'#type' => 'submit',
 					'#value' => t('Change'),
-					'#name' => $uid
+					'#name' => $uid,
+					'#ajax' => [
+						'callback' => 'table_form_ajax',
+						'wrapper' => "table-wrapper",
+						'effect' => 'fade',
+					]
 				]
 		];
 	}
 	$form['table'] = [
+		'#prefix' => "<div id='table-wrapper'>",
+		'#suffix' => '</div>',
 		'#theme' => 'table_form',
 		'#header' => [t('Name'), t('UID'), ''],
 		'rows' => $rows,
@@ -58,9 +65,18 @@ function table_form_form() {
 	return $form;
 }
 
-function table_form_form_submit($form_id, $form_state) {
+function table_form_ajax($form, &$form_state) {
+	return $form['table'];
+}
+
+function table_form_form_submit(&$form, &$form_state) {
 	$uid = $form_state['clicked_button']['#name'];
+
+	//Reset input values to make sure that the ajax form returns correctly.
+	$form_state['rebuild'] = TRUE;
+	$form_state['input'] = [];
 	$user = user_load($uid);
+	drupal_set_message("Updated User - $user->name");
 	user_save($user, ['name' => $form_state['values']['name-' . $uid]]);
 }
 /**
